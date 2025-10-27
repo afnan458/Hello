@@ -11,7 +11,12 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		FCA345532EA8F73C006330BC /* Hello */ = {
+		FC514FB52EAE62A900B00E8D /* manger */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = manger;
+			sourceTree = "<group>";
+		};
+		FC514FD22EAE62B300B00E8D /* Hello */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Hello;
 			sourceTree = "<group>";
@@ -32,7 +37,8 @@
 		FCA345482EA8F73C006330BC = {
 			isa = PBXGroup;
 			children = (
-				FCA345532EA8F73C006330BC /* Hello */,
+				FC514FD22EAE62B300B00E8D /* Hello */,
+				FC514FB52EAE62A900B00E8D /* manger */,
 				FCA345522EA8F73C006330BC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -61,7 +67,8 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				FCA345532EA8F73C006330BC /* Hello */,
+				FC514FB52EAE62A900B00E8D /* manger */,
+				FC514FD22EAE62B300B00E8D /* Hello */,
 			);
 			name = Hello;
 			packageProductDependencies = (
