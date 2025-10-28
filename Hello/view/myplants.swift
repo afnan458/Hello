@@ -21,7 +21,7 @@ struct myplants: View {
                 VStack {
                     
                     // العنوان والخط
-                    VStack(spacing: 5) {
+                    VStack(spacing: 10) {
                         HStack {
                             Text("My Plants 🌱").font(.title).fontWeight(.bold).foregroundColor(.white)
                             Spacer()
@@ -50,9 +50,8 @@ struct myplants: View {
                         Text("Set Plant Reminder").font(.headline).fontWeight(.semibold).foregroundColor(.white)
                             .frame(maxWidth: .infinity).padding()
                             .background(
-                                RoundedRectangle(cornerRadius: 30).fill(Color.mintAccent).shadow(color: .mintAccent.opacity(0.5), radius: 10, x: 0, y: 5)
+                                RoundedRectangle(cornerRadius: 30).fill(Color.mint).shadow(color: .mint.opacity(0.5), radius: 10, x: 0, y: 5)
                             )
-                            .glassEffect()
                     }
                     .padding(.horizontal, 30).padding(.bottom, 60)
                 }
@@ -60,10 +59,11 @@ struct myplants: View {
         )
         .preferredColorScheme(.dark)
         .fullScreenCover(isPresented: $showingReminderSheet) {
-            myplants()
+            MyPlants()
         }
     }
 }
+
 #Preview {
     myplants()
 }

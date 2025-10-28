@@ -6,7 +6,7 @@
 //
 import SwiftUI
 
-// MARK: - Color Extension
+// MARK: - Color Extension (single source kept here)
 extension Color {
     // دالة لاستخدام ألوان Hex
     init(hex: String) {
@@ -41,75 +41,86 @@ extension Color {
     
     // مستخدم في Reminder.swift كخلفية للبادجات
     static let badgeBackground = Color.white.opacity(0.06)
+
+    // مستخدم في sheetR كخلفية لأقسام القائمة
+    static let sectionBackground = Color.white.opacity(0.06)
 }
 
 // ------------------------------------------------------------------------
 
 // MARK: - AllDoneView (شاشة الإنجاز)
 struct AllDoneView: View {
+    // نمرر إغلاق إضافة نبتة جديدة من الشاشة الرئيسية
+    var onAdd: (() -> Void)? = nil
+
     var body: some View {
-        VStack {
-            Spacer()
-            // 🌟 الصورة المقصوصة على شكل دائرة 🌟
-            Image("Image") // يُفترض أن "Image" هو اسم صورة النبتة في الأصول
-                 .resizable()
-                 .scaledToFill() // لتغطية الدائرة بالكامل دون فراغات
-                 .frame(width: 160, height: 200) // تحديد حجم الدائرة
-                 //.clipShape(Circle()) // قص الصورة لتصبح دائرة
-                 .padding(.bottom, 19) // تباعد بسيط بين الصورة والنصوص
-            Spacer()
-            // النص الرئيسي (يظهر تحت الصورة مباشرة)
-            Text("All Done! 🎉")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-            
-            // النص الثانوي (يظهر تحت النص الرئيسي)
-            Text("All Reminders Completed")
-                .font(.callout)
-                .foregroundColor(.secondaryTextColor)
-            Spacer(minLength: 200)
+        ZStack(alignment: .bottomTrailing) {
+            VStack {
+                Spacer()
+                Image("Image")
+                     .resizable()
+                     .scaledToFill()
+                     .frame(width: 160, height: 200)
+                     .padding(.bottom, 19)
+                Spacer()
+                Text("All Done! 🎉")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                Text("All Reminders Completed")
+                    .font(.callout)
+                    .foregroundColor(.secondaryTextColor)
+                Spacer(minLength: 200)
+            }
+
+            // زر + عائم أسفل يمين
+            Button {
+                onAdd?()
+            } label: {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: 60))
+                    .foregroundColor(Color("green00"))
+                    .background(Color.ultraDarkBackground)
+                    .clipShape(Circle())
+                    .accessibilityLabel("Add Plant")
+            }
+            .padding(.trailing, 20)
+            .padding(.bottom, 30)
         }
-    
     }
 }
 
 // ------------------------------------------------------------------------
 
-// MARK: - MainContentView (الكود الذي أرسلته)
+// MARK: - MainContentView
 struct MainContentView: View {
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             Color.ultraDarkBackground.ignoresSafeArea()
 
             VStack(alignment: .leading) {
-                // 1. Title Area
                 HStack(alignment: .lastTextBaseline) {
                     Text("My Plants")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
-                    
                     Text("🌱")
                         .font(.title)
                 }
                 .padding(.leading)
                 .padding(.top, 60)
 
-                // 2. 🌟 THIN SEPARATOR LINE 🌟
                 Divider()
-                    .overlay(Color.lightDivider) // Use your defined light color
-                    .padding(.vertical, 3) // Space around the line
-                    .padding([.leading, .trailing]) // Ensure it spans the width
-                    .opacity(0.5) // Make it very light and thin
+                    .overlay(Color.lightDivider)
+                    .padding(.vertical, 3)
+                    .padding([.leading, .trailing])
+                    .opacity(0.5)
 
-                // 3. Centered Content (AllDoneView)
                 AllDoneView()
                     .frame(maxWidth: .infinity)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
-            // 4. Floating Add Button
             Button(action: { /* Action */ }) {
                 Image(systemName: "plus")
                     .font(.title2)
@@ -127,14 +138,13 @@ struct MainContentView: View {
     }
 }
 
-// MARK: - Preview (لإظهار الكود في Xcode)
+// MARK: - Preview
 #Preview {
     MainContentView()
 }
-
-// ------------------------------------------------------------------------
 
 #Preview {
     AllDoneView()
         .preferredColorScheme(.dark)
 }
+

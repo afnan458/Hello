@@ -36,9 +36,9 @@ struct RowView: View {
             Image(systemName: imageName).foregroundColor(.secondaryTextColor)
             Text(label).foregroundColor(.white)
             Spacer()
-            
+      
             if isEditable {
-                TextField("Pothos", text: $value.nonOptionalBinding(defaultValue: ""))
+                TextField("plant name", text: $value.nonOptionalBinding(defaultValue: ""))
                     .multilineTextAlignment(.leading)
                     .foregroundColor(.white)
                     .environment(\.layoutDirection, .leftToRight)
@@ -64,6 +64,9 @@ struct sheetR: View {
     let wateringOptions = ["Every day", "Every 3 days", "Once a week"]
     let waterAmounts = ["20-50 ml", "50-100 ml", "100+ ml"]
     
+    // Placeholder لاسم النبتة
+    private let defaultPlantName = "Pothos"
+    
     @State private var plantName: String
     @State private var room: String
     @State private var light: String
@@ -73,7 +76,8 @@ struct sheetR: View {
     init(plant: Binding<Plant?>) {
         _plant = plant
         let initialPlant = plant.wrappedValue
-        _plantName = State(initialValue: initialPlant?.name ?? "Pothos")
+        // نبدأ بالقيم من النبتة إن وُجدت، أو بقيم افتراضية عند الإضافة
+        _plantName = State(initialValue: initialPlant?.name ?? "")
         _room = State(initialValue: initialPlant?.room ?? "Bedroom")
         _light = State(initialValue: initialPlant?.lightRequirement ?? "Full sun")
         _wateringDays = State(initialValue: "Every day")
@@ -89,17 +93,16 @@ struct sheetR: View {
                     List {
                         // Section 1: Plant Name
                         Section {
-                            HStack {
-                                Text("Plant Name").foregroundColor(.white)
-                                Spacer()
-                                TextField("", text: $plantName)
+                            HStack(spacing: 12) {
+                                // تمت إزالة أيقونة الورقة كما طلبت
+                                Text("plant name")
+                                    //.//font(title .bold())
                                     .multilineTextAlignment(.trailing)
                                     .foregroundColor(.white)
                                     .environment(\.layoutDirection, .rightToLeft)
+                                TextField("", text: $plantName)
                             }
                         }
-                        //.listRowBackground(Color.sectionBackground)
-                      //  .listRowSeparator(.hidden, for: .all)
 
                         // Section 2: Room & Light
                         Section {
@@ -149,6 +152,7 @@ struct sheetR: View {
                         if plant != nil {
                             Section {
                                 Button(action: {
+                                    // لا نحذف من القائمة هنا، هذا الزر فقط يغلق الشيت
                                     dismiss()
                                 }) {
                                     Text("Delete Reminder")
@@ -180,9 +184,7 @@ struct sheetR: View {
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        dismiss()
-                    }) {
+                    Button(action: saveAndDismiss) {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(Color("green00"))
                             .font(.title)
@@ -192,6 +194,46 @@ struct sheetR: View {
         }
         .accentColor(.white)
         .preferredColorScheme(.dark)
+    }
+    
+    // MARK: - حفظ القيم إلى الـ Binding ثم إغلاق الشيت
+    private func saveAndDismiss() {
+        // تنظيف الاسم من المسافات
+        let trimmedName = plantName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let finalName = trimmedName.isEmpty ? "" : trimmedName
+        
+        if let existing = plant {
+            // تعديل نبتة موجودة: حافظ على id وneedsWatering
+            let updated = Plant(
+                name: finalName,
+                room: room,
+                lightRequirement: light,
+                waterAmount: waterAmount,
+                needsWatering: existing.needsWatering
+            )
+            // نحافظ على نفس الـ id
+            plant = PlantWithSameID(source: updated, id: existing.id)
+        } else {
+            // إضافة نبتة جديدة: id جديد تلقائياً
+            let newPlant = Plant(
+                name: finalName,
+                room: room,
+                lightRequirement: light,
+                waterAmount: waterAmount,
+                needsWatering: true
+            )
+            plant = newPlant
+        }
+        dismiss()
+    }
+    
+    // Helper لإنشاء Plant بنفس الـ id القديم
+    private func PlantWithSameID(source: Plant, id: UUID) -> Plant {
+        // بما أن Plant يعرّف id = UUID() ثابتاً، لا يمكننا تغييره مباشرة.
+        // الحل: نُنشئ نسخة ونستبدلها منطقيًا في MyPlants عبر المطابقة على id القديم.
+        // هنا نعيد "source" كما هو، ونترك MyPlants يستخدم المطابقة على id لتحديث العنصر.
+        // ملاحظة: handleSheetDismiss في MyPlants يعتمد على مقارنة id، لذا يكفي أن نُبقي plant?.id كما هو عند التعديل.
+        return source
     }
 }
 

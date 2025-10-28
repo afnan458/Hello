@@ -8,7 +8,7 @@
 import SwiftUI
 
 // MARK: - 1. Model (النموذج)
-struct Plant: Identifiable {
+struct Plant: Identifiable, Equatable {
     let id = UUID()
     var name: String
     var room: String // تم تغييرها من location إلى room
@@ -24,6 +24,54 @@ let mockPlants: [Plant] = [
     Plant(name: "Orchid", room: "Living Room", lightRequirement: "Full sun", waterAmount: "20-50 ml", needsWatering: false),
     Plant(name: "Spider", room: "Kitchen", lightRequirement: "Full sun", waterAmount: "20-50 ml", needsWatering: true)
 ]
+
+struct EditablePlantsView: View {
+    @State private var plants: [Plant] = mockPlants
+
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach($plants) { $plant in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            TextField("Plant name", text: $plant.name)
+                                .textFieldStyle(.roundedBorder)
+                            // عرض حقل موجود بدلاً من species
+                            Text(plant.room)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 6)
+                }
+                .onDelete { indexSet in
+                    plants.remove(atOffsets: indexSet)
+                }
+            }
+            .navigationTitle("Plants")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: addPlant) {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+        }
+    }
+
+    // إضافة عنصر افتراضي سريع
+    private func addPlant() {
+        let newPlant = Plant(
+            name: "",
+            room: "Bedroom",
+            lightRequirement: "Full sun",
+            waterAmount: "20-50 ml",
+            needsWatering: true
+        )
+        plants.append(newPlant)
+    }
+}
+
 
 // MARK: - 2. Plant List Item View (الكود المُعدَّل)
 struct PlantListItemView: View {
@@ -58,12 +106,10 @@ struct PlantListItemView: View {
 
                     // Plant Name
                     HStack{
-                        Text(plant.name)
+                        Text(plant.name.isEmpty ? "Unnamed Plant" : plant.name)
                             .font(.title2)
                             .fontWeight(.regular)
                             .foregroundColor(isWatered ? .secondaryTextColor : .white)
-                        
-                        TextField("", text: $plant.name, prompt: Text("Pothes").foregroundStyle(.white.opacity(0.35)))
                     }
                     
                     // Details Row (Full sun & Water amount Badges)
@@ -114,11 +160,67 @@ struct PlantListItemView: View {
     }
 }
 
+// MARK: - Header Section extracted
+private struct PlantsHeaderView: View {
+    let plantsWateredCount: Int
+    let plantsNeedingWaterCount: Int
+    let completionRatio: Double
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("My Plants 🌱")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                .padding(.top, 20)
+
+            Group {
+                if plantsNeedingWaterCount > 0 {
+                    HStack {
+                        Spacer()
+                        Text("\(plantsWateredCount) of your plants are waiting for a sip 💧")
+                            .foregroundColor(.white)
+                        Spacer()
+                    }
+                } else {
+                    HStack {
+                        Spacer()
+                        Text("\(plantsWateredCount) of your plants feel loved today ✨")
+                            .foregroundColor(.white)
+                        Spacer()
+                    }
+                }
+            }
+            .font(.subheadline)
+            .padding(.bottom, 5)
+
+            GeometryReader { geometry in
+                let width: CGFloat = geometry.size.width * CGFloat(completionRatio)
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.secondaryTextColor.opacity(0.3))
+                        .frame(height: 3)
+
+                    Capsule()
+                        .fill(Color("green00"))
+                        .frame(width: width, height: 3)
+                        .animation(.easeInOut(duration: 0.5), value: width)
+                }
+            }
+            .frame(height: 3)
+            .padding(.vertical, 10)
+        }
+    }
+}
+
 // MARK: - 3. MyPlants View (الصفحة الرئيسية)
 struct MyPlants: View {
     @State private var plants: [Plant] = mockPlants
     @State private var showingReminderSheet = false
     @State private var selectedPlant: Plant?
+    
+    // NEW: عرض صفحة الإنجاز عند اكتمال الري
+    @State private var showAllDone = false
     
     // Logic: عدد النباتات التي تم ريّها (needsWatering = false)
     var plantsWateredCount: Int {
@@ -133,95 +235,117 @@ struct MyPlants: View {
     var totalPlantsCount: Int { plants.count }
     
     var completionRatio: Double {
-        totalPlantsCount > 0 ? Double(plantsWateredCount) / Double(totalPlantsCount) : 0
+        let ratio: Double
+        if totalPlantsCount > 0 {
+            ratio = Double(plantsWateredCount) / Double(totalPlantsCount)
+        } else {
+            ratio = 0.0
+        }
+        // Clamp explicitly to [0, 1] without nested min/max chains
+        if ratio < 0.0 { return 0.0 }
+        if ratio > 1.0 { return 1.0 }
+        return ratio
     }
     
     var body: some View {
-        // تم تبديل NavigationView بـ ZStack لتحكم أفضل في التصميم الداكن
         ZStack(alignment: .bottomTrailing) {
-            Color.ultraDarkBackground.edgesIgnoringSafeArea(.all)
-
-            List {
-                // Header Section
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("My Plants 🌱")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .padding(.top, 20)
-
-                    // الرسالة العلوية الديناميكية
-                    Group {
-                        if plantsNeedingWaterCount > 0 {
-                            HStack {
-                                Spacer()
-                                Text("\(plantsWateredCount) of your plants are waiting for a sip 💧")
-                                    .foregroundColor(.white)
-                                Spacer()
-                            }
-                        } else {
-                            HStack {
-                                Spacer()
-                                Text("\(plantsWateredCount) of your plants feel loved today ✨")
-                                    .foregroundColor(.white)
-                                Spacer()
-                            }
-                        }
-                    }
-                    .font(.subheadline)
-                    .padding(.bottom, 5)
-
-                    // شريط الإنجاز (Progress Bar)
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            Capsule()
-                                .fill(Color.secondaryTextColor.opacity(0.3))
-                                .frame(height: 3)
-
-                            Capsule()
-                                .fill(Color("green00"))
-                                .frame(width: geometry.size.width * CGFloat(completionRatio), height: 3)
-                                .animation(.easeInOut(duration: 0.5), value: completionRatio)
-                        }
-                    }
-                    .frame(height: 3)
-                    .padding(.vertical, 10)
-                }
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
-
-                // List Items
-                ForEach($plants) { $plant in
-                    PlantListItemView(plant: $plant)
-                        .onTapGesture {
-                            selectedPlant = plant
-                            showingReminderSheet = true
-                        }
-                }
-            }
-            .scrollContentBackground(.hidden)
-            .listStyle(PlainListStyle())
-            
-            // زر الإضافة
-            Button(action: {
-                selectedPlant = nil
-                showingReminderSheet = true
-            }) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(Color("green00"))
-                    .background(Color.ultraDarkBackground)
-                    .clipShape(Circle())
-            }
-            .padding(.bottom, 20)
-            .padding(.trailing, 20)
+            Color.ultraDarkBackground.ignoresSafeArea()
+            plantsList
+            addButton
         }
-        // استخدم sheet مع isPresented لتمرير Binding<Plant?> إلى sheetR
-        .sheet(isPresented: $showingReminderSheet) {
+        // عند الإغلاق: إذا الاسم غير فاضي نضيف، غير كذا ما نضيف
+        .sheet(isPresented: $showingReminderSheet, onDismiss: handleSheetDismiss) {
             sheetR(plant: $selectedPlant)
         }
+        // NEW: راقب اكتمال الري واعرض صفحة الإنجاز
+        .onChange(of: plantsNeedingWaterCount) { _, newValue in
+            showAllDone = (newValue == 0 && !plants.isEmpty)
+        }
+        .fullScreenCover(isPresented: $showAllDone) {
+            AllDoneView()
+                .preferredColorScheme(.dark)
+        }
         .preferredColorScheme(.dark)
+    }
+    
+    // MARK: - Extracted subviews to reduce type-checking complexity
+    private var plantsList: some View {
+        List {
+            PlantsHeaderView(
+                plantsWateredCount: plantsWateredCount,
+                plantsNeedingWaterCount: plantsNeedingWaterCount,
+                completionRatio: completionRatio
+            )
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+
+            ForEach($plants) { $plant in
+                PlantListItemView(plant: $plant)
+                    .onTapGesture {
+                        selectedPlant = plant
+                        showingReminderSheet = true
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button(role: .destructive) {
+                            removePlant(id: plant.id)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+            }
+            .onDelete(perform: deleteOffsets)
+        }
+        .scrollContentBackground(.hidden)
+        .listStyle(PlainListStyle())
+    }
+    
+    private var addButton: some View {
+        Button(action: {
+            selectedPlant = Plant(
+                name: "",
+                room: "Bedroom",
+                lightRequirement: "Full sun",
+                waterAmount: "20-50 ml",
+                needsWatering: true
+            )
+            showingReminderSheet = true
+        }) {
+            Image(systemName: "plus.circle.fill")
+                .font(.system(size: 60))
+                .foregroundColor(Color("green00"))
+                .background(Color.ultraDarkBackground)
+                .clipShape(Circle())
+        }
+        .padding(.bottom, 20)
+        .padding(.trailing, 20)
+    }
+    
+    private func handleSheetDismiss() {
+        guard let edited = selectedPlant else { return }
+        let trimmed = edited.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            // الاسم فاضي: لا نضيف شيء
+            selectedPlant = nil
+            return
+        }
+        if let idx = plants.firstIndex(where: { $0.id == edited.id }) {
+            plants[idx] = edited
+        } else {
+            plants.append(edited)
+        }
+        selectedPlant = nil
+    }
+    
+    // حذف عبر السحب (onDelete)
+    private func deleteOffsets(_ offsets: IndexSet) {
+        plants.remove(atOffsets: offsets)
+    }
+    // حذف عبر زر Swipe Action
+    private func removePlant(id: UUID) {
+        if let idx = plants.firstIndex(where: { $0.id == id }) {
+            plants.remove(at: idx)
+        }
     }
 }
 
@@ -229,3 +353,4 @@ struct MyPlants: View {
     MyPlants()
         .preferredColorScheme(.dark)
 }
+
