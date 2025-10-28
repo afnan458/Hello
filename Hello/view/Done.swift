@@ -1,9 +1,3 @@
-//
-//  Done.swift
-//  Hello
-//
-//  Created by Afnan hassan on 04/05/1447 AH.
-//
 import SwiftUI
 
 // MARK: - Color Extension (single source kept here)
@@ -50,42 +44,23 @@ extension Color {
 
 // MARK: - AllDoneView (شاشة الإنجاز)
 struct AllDoneView: View {
-    // نمرر إغلاق إضافة نبتة جديدة من الشاشة الرئيسية
-    var onAdd: (() -> Void)? = nil
-
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            VStack {
-                Spacer()
-                Image("Image")
-                     .resizable()
-                     .scaledToFill()
-                     .frame(width: 160, height: 200)
-                     .padding(.bottom, 19)
-                Spacer()
-                Text("All Done! 🎉")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                Text("All Reminders Completed")
-                    .font(.callout)
-                    .foregroundColor(.secondaryTextColor)
-                Spacer(minLength: 200)
-            }
-
-            // زر + عائم أسفل يمين
-            Button {
-                onAdd?()
-            } label: {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(Color("green00"))
-                    .background(Color.ultraDarkBackground)
-                    .clipShape(Circle())
-                    .accessibilityLabel("Add Plant")
-            }
-            .padding(.trailing, 20)
-            .padding(.bottom, 30)
+        VStack {
+            Spacer()
+            Image("Image")
+                 .resizable()
+                 .scaledToFill()
+                 .frame(width: 160, height: 200)
+                 .padding(.bottom, 19)
+            Spacer()
+            Text("All Done! 🎉")
+                .font(.title)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+            Text("All Reminders Completed")
+                .font(.callout)
+                .foregroundColor(.secondaryTextColor)
+            Spacer(minLength: 200)
         }
     }
 }
@@ -139,6 +114,8 @@ struct MainContentView: View {
 }
 
 // MARK: - Preview
+
+
 #Preview {
     MainContentView()
 }

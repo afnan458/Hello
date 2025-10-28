@@ -111,7 +111,7 @@ struct sheetR: View {
                                 Text("Room").foregroundColor(.white)
                             }) {
                                 ForEach(rooms, id: \.self) { value in
-                                    Text(value).tag(value)
+                                    Text(value).tag(value as String)
                                 }
                             }
                             
@@ -120,7 +120,7 @@ struct sheetR: View {
                                 Text("Light").foregroundColor(.white)
                             }) {
                                 ForEach(lights, id: \.self) { value in
-                                    Text(value).tag(value)
+                                    Text(value).tag(value as String)
                                 }
                             }
                         }
@@ -133,7 +133,7 @@ struct sheetR: View {
                                 Text("Watering Days").foregroundColor(.white)
                             }) {
                                 ForEach(wateringOptions, id: \.self) { value in
-                                    Text(value).tag(value)
+                                    Text(value).tag(value as String)
                                 }
                             }
                             
@@ -142,7 +142,7 @@ struct sheetR: View {
                                 Text("Water").foregroundColor(.white)
                             }) {
                                 ForEach(waterAmounts, id: \.self) { value in
-                                    Text(value).tag(value)
+                                    Text(value).tag(value as String)
                                 }
                             }
                         }
@@ -259,3 +259,4 @@ struct StatefulPreviewWrapper<Value>: View {
         content($value)
     }
 }
+

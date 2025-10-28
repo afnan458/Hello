@@ -258,10 +258,11 @@ struct MyPlants: View {
             sheetR(plant: $selectedPlant)
         }
         // NEW: راقب اكتمال الري واعرض صفحة الإنجاز
-        .onChange(of: plantsNeedingWaterCount) { _, newValue in
+        .onChange(of: plantsNeedingWaterCount) { oldValue, newValue in
             showAllDone = (newValue == 0 && !plants.isEmpty)
         }
         .fullScreenCover(isPresented: $showAllDone) {
+            // مرر onAdd لفتح sheetR مباشرة لإضافة نبتة جديدة
             AllDoneView()
                 .preferredColorScheme(.dark)
         }
@@ -353,4 +354,3 @@ struct MyPlants: View {
     MyPlants()
         .preferredColorScheme(.dark)
 }
-

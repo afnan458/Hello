@@ -12,17 +12,15 @@ import SwiftUI
 struct HelloApp: App {
     var body: some Scene {
         WindowGroup {
-            // The first view to be displayed when the app launches
-            myplants()
-            // Ensure the entire app adopts the dark color scheme if desired
-           
-        // .preferredColorScheme(.dark)
-        
+            // Start directly with the main plants screen
+            MyPlants()
+            // If you want the entire app to be dark:
+            // .preferredColorScheme(.dark)
         }
     }
 }
 
 #Preview {
-    myplants()
+    MyPlants()
     // .preferredColorScheme(.dark)
 }
